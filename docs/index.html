@@ -20,16 +20,18 @@
 
               let domParser = new DOMParser(),
                   doc       = domParser.parseFromString(htmlTxt, 'text/xml');
-                  feedQsa   = doc.querySelectorAll('link'),
+                  feedQsa   = doc.querySelectorAll('item'),
                   feed      = Array.from(feedQsa);
 
               feed.map(
-                ln =>
-                  console.log(
-                    (ln.childNodes && ln.childNodes.length)
-                      ? ln.childNodes[0].data
-                      : ln.attributes.href
-                  )
+                item => {
+
+                  const pre = document.createElement('pre');
+                  pre.innerHTML = item.innerHTML;
+
+                  document.body.append(pre);
+
+                }
               );
 
             }
