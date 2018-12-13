@@ -9,34 +9,55 @@
 
     <script type="text/javascript">
 
-      const RssErrorHandler = e => console.error(`Error hitting the RSS: ${e}`);
-
       const targetUrl = 'https://crazywisdom.libsyn.com/rss';
 
+      const RssErrorHandler = e   => console.error(`Error hitting the RSS: ${e}`),
+            DocFromXml      = xml => (new DOMParser()).parseFromString(xml, 'text/xml');
+
+
+
+      const el = (tag, opts = {}) => {
+
+        const ret = document.createElement(tag);
+
+        if (opts.className) { ret.className = opts.className; }
+        if (opts.id)        { ret.id        = opts.id;        }
+        if (opts.text)      { ret.text      = opts.text;      }
+
+        if (opts.children)  { opts.children.map(ch => ret.appendChild(ch) ); }
+
+        return ret;
+
+      };
+
+
+
+      const feedItemToBlock = item => {
+
+        const pre = document.createElement('pre');
+              pre.innerHTML = item.innerHTML;
+
+        const Article = el('div');
+
+        document.body.append(pre);
+
+      };
+
+
+
+      const handleFetch = feedXml => {
+
+        let doc  = DocFromXml(feedXml);
+            feed = Array.from(doc.querySelectorAll('item'));
+
+        feed.map(feedItemToBlock);
+
+      };
+
+
+
       fetch(targetUrl).then(
-        (res) => {
-          res.text().then(
-            (htmlTxt) => {
-
-              let domParser = new DOMParser(),
-                  doc       = domParser.parseFromString(htmlTxt, 'text/xml');
-                  feedQsa   = doc.querySelectorAll('item'),
-                  feed      = Array.from(feedQsa);
-
-              feed.map(
-                item => {
-
-                  const pre = document.createElement('pre');
-                  pre.innerHTML = item.innerHTML;
-
-                  document.body.append(pre);
-
-                }
-              );
-
-            }
-          )
-        }
+        res => res.text().then(handleFetch)
       ).catch(RssErrorHandler);
 
     </script>
