@@ -7,6 +7,27 @@
 
     <link rel="stylesheet" type="text/css" href="rss.css" />
 
+    <style type="text/css">
+
+      html, body { border: 0; margin: 0; padding: 0; }
+      #contain   { margin: 4em auto 4em auto; width: 50em; }
+
+      pre { margin: 2em; background-color: #ccc; }
+      .libsyn { margin-left: 2em; }
+
+      .Article       { margin-bottom: 18em; }
+      .Description p { text-indent: 2em; line-height: 135%; }
+
+      .TopBox        { position: relative; padding: 0 0 1em 14em; margin-bottom: 3em; min-height: 14em; border-bottom: 1px solid black; }
+      .itunesImage   { position: absolute; left: 0; top: 0; max-width: 12em; height: 12em; margin-right: 2em; }
+
+      .kwtags        { margin-top: 1em; }
+      .keyword       { padding: 0.25em 0.75em; background-color: #ddd; border-radius: 1.5em; line-height: 1em; margin-right: 0.5em; }
+
+      audio          { width: 100%; }
+
+    </style>
+
     <script type="text/javascript">
 
       const targetUrl = 'https://crazywisdom.libsyn.com/rss';
@@ -22,7 +43,11 @@
 
         if (opts.className) { ret.className = opts.className; }
         if (opts.id)        { ret.id        = opts.id;        }
-        if (opts.text)      { ret.text      = opts.text;      }
+        if (opts.text)      { ret.innerHTML = opts.text;      }
+        if (opts.href)      { ret.href      = opts.href;      }
+        if (opts.src)       { ret.src       = opts.src;       }
+        if (opts.controls)  { ret.controls  = opts.controls;  }
+        if (opts.type)      { ret.type      = opts.type;      }
 
         if (opts.children)  { opts.children.map(ch => ret.appendChild(ch) ); }
 
@@ -32,14 +57,45 @@
 
 
 
-      const feedItemToBlock = item => {
+      const feedItemToBlock = (item, contain) => {
 
-        const pre = document.createElement('pre');
-              pre.innerHTML = item.innerHTML;
+        const qs            = sel => item.querySelector(sel);
 
-        const Article = el('div');
+        const Duration  = (qs('duration') || { innerHTML: '' }).innerHTML,
+              PubText   = `<b>${Duration}</b> &nbsp; Published on ${(new Date(qs('pubDate').innerHTML).toLocaleString())}`,
+              Keywords  = qs('keywords').innerHTML.split(',').map(kw => kw.trim()).filter(kw => kw);
 
-        document.body.append(pre);
+        const Title     = el('h1',     { text: qs('title').innerHTML }),
+              Subtitle  = el('h2',     { text: (qs('subtitle') || { childNodes: [{data:''}] }).childNodes[0].data }),
+              LibSyn    = el('a',      { text: "Listen on LibSyn", href: qs('link').childNodes[0].data, className: 'libsyn' }),
+
+              Published = el('div',    { text: PubText, children: [ LibSyn ] }),
+              KwTags    = el('div',    { className: 'kwtags', children: Keywords.map(w => el('span', { text: w.charAt(0).toUpperCase() + w.substr(1), className: 'keyword' })) }),
+
+              Image     = el('img',    { src: qs('image').attributes.href.nodeValue, className: 'itunesImage' }),
+              TopBox    = el('div',    { children: [Image, Title, Subtitle, Published, KwTags], className: 'TopBox' }),
+
+              Descr     = el('div',    { text: qs('encoded').childNodes[0].data, className: 'Description' });
+
+        const enclosure = qs('enclosure');
+
+        let Audio;
+
+        if (enclosure) {
+
+          const Source    = el('source', { src: qs('enclosure').attributes.url.nodeValue, type: 'audio/mp3' });
+                Audio     = el('audio',  { controls: 'controls', children: [Source] });
+
+        } else {
+
+          Audio = document.createElement('span');
+
+        }
+
+
+        const Article = el('div', { children: [TopBox, Audio, Descr], className: 'Article' });
+
+        contain.appendChild(Article);
 
       };
 
@@ -47,10 +103,12 @@
 
       const handleFetch = feedXml => {
 
-        let doc  = DocFromXml(feedXml);
-            feed = Array.from(doc.querySelectorAll('item'));
+        let doc     = DocFromXml(feedXml);
+            feed    = Array.from(doc.querySelectorAll('item')),
+            contain = el('div', { id: 'contain' });
 
-        feed.map(feedItemToBlock);
+        feed.map( item => feedItemToBlock(item, contain) );
+        document.body.appendChild(contain);
 
       };
 
