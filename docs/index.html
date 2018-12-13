@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+  <head>
+
+    <title>RSS Proto</title>
+
+    <link rel="stylesheet" type="text/css" href="rss.css" />
+
+    <script type="text/javascript">
+
+      const RssErrorHandler = e => console.error(`Error hitting the RSS: ${e}`);
+
+      const targetUrl = 'https://crazywisdom.libsyn.com/rss';
+
+      fetch(targetUrl).then(
+        (res) => {
+          res.text().then(
+            (htmlTxt) => {
+
+              let domParser = new DOMParser(),
+                  doc       = domParser.parseFromString(htmlTxt, 'text/xml');
+                  feedQsa   = doc.querySelectorAll('link'),
+                  feed      = Array.from(feedQsa);
+
+              feed.map(
+                ln =>
+                  console.log(
+                    (ln.childNodes && ln.childNodes.length)
+                      ? ln.childNodes[0].data
+                      : ln.attributes.href
+                  )
+              );
+
+            }
+          )
+        }
+      ).catch(RssErrorHandler);
+
+    </script>
+
+  </head>
+
+</html>

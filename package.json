@@ -1,0 +1,26 @@
+{
+  "name": "rsstositealpha",
+  "version": "1.0.0",
+  "description": "Alpha of RSS to Site",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StoneCypher/RssToSiteAlpha.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/StoneCypher/RssToSiteAlpha/issues"
+  },
+  "homepage": "https://github.com/StoneCypher/RssToSiteAlpha#readme",
+  "devDependencies": {
+    "rimraf": "^2.6.2",
+    "rollup": "^0.67.4",
+    "rss": "^1.2.2",
+    "serverless": "^1.35.0",
+    "typescript": "^3.2.2"
+  }
+}
