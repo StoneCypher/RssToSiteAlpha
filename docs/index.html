@@ -12,9 +12,15 @@
       * { font-family: 'Fira Sans', sans-serif; font-weight: 200; }
 
       html, body { border: 0; margin: 0; padding: 0; }
-      #contain   { margin: 4em auto 4em auto; width: 50em; }
+      #contain   { margin: 11em auto 4em auto; width: 50em; }
 
-      h1,h2 { font-weight: 700; }
+      #header    { position: fixed; top: 0; left: 0; right: 0; background-color: #eee; height: 7em; z-index: 9; }
+      .htitle    { position: absolute; top: 1em; left: 1.5em; }
+      .htext     { font-size: 5em; font-weight: 700; line-height: 1em; }
+
+      h1, h2 { font-weight: 700; }
+      h1 { font-size: 200%; }
+      h2 { font-size: 125%; }
 
       pre { margin: 2em; background-color: #ccc; }
       .libsyn { margin-left: 2em; font-weight: 400; text-decoration: none; color: #07f; }
@@ -29,6 +35,19 @@
       .keyword       { padding: 0.25em 0.75em; background-color: #ddd; border-radius: 1.5em; line-height: 1em; margin-right: 0.5em; font-weight: 400; }
 
       audio          { width: 100%; }
+
+
+
+      body.phaedra                { background-color: #F1F0E2; color: #2B363D; }
+      body.phaedra .itunesImage   { border: 1px solid #2B363D; }
+
+      body.phaedra h2             { color: #DDBD85 }
+      body.phaedra .keyword       { background-color: #D3E0DF; }
+
+      body.phaedra .pubtext b     { color: #F25652; font-weight: 400; }
+      body.phaedra .Description p { font-weight: 400; }
+
+      body.phaedra #header        { background-color: #DDBD85; }
 
     </style>
 
@@ -73,7 +92,7 @@
               Subtitle  = el('h2',     { text: (qs('subtitle') || { childNodes: [{data:''}] }).childNodes[0].data }),
               LibSyn    = el('a',      { text: "Listen on LibSyn", href: qs('link').childNodes[0].data, className: 'libsyn' }),
 
-              Published = el('div',    { text: PubText, children: [ LibSyn ] }),
+              Published = el('div',    { text: PubText, children: [ LibSyn ], className: 'pubtext' }),
               KwTags    = el('div',    { className: 'kwtags', children: Keywords.map(w => el('span', { text: w.charAt(0).toUpperCase() + w.substr(1), className: 'keyword' })) }),
 
               Image     = el('img',    { src: qs('image').attributes.href.nodeValue, className: 'itunesImage' }),
@@ -112,6 +131,25 @@
             contain = el('div', { id: 'contain' });
 
         feed.map( item => feedItemToBlock(item, contain) );
+
+        // now delete all <item>s, because the header tags are redundant and not contained
+        let victim;
+        while (victim = doc.getElementById('item')) {
+          victim.parentNode.removeChild(victim);
+        }
+
+        const qsd         = sel => doc.querySelector(sel),
+
+              Title       = el('span', { text: qsd('title').innerHTML, className: 'htext' }),
+              HTitle      = el('span', { className: 'htitle', children: [Title] }),
+              Description = qsd('description').childNodes[0].data,
+              BaseURL     = qsd('docs').innerHTML,
+              AtomRss     = qsd('link').attributes.href.nodeValue,
+              LastUpdate  = new Date(qsd('pubDate').innerHTML),
+
+              Header      = el('div', { children: [HTitle], id: 'header' });
+
+        document.body.appendChild(Header);
         document.body.appendChild(contain);
 
       };
@@ -125,5 +163,8 @@
     </script>
 
   </head>
+
+  <body class="phaedra">
+  </body>
 
 </html>
